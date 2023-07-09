@@ -1,0 +1,39 @@
+volumes:
+  php-fpm-socket:
+  db-data:
+
+services:
+  php:
+    container_name: php
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    volumes:
+      - php-fpm-socket:/var/run/php-fpm
+      - ./app:/workspace/app
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    volumes:
+      - php-fpm-socket:/var/run/php-fpm
+      - ./app:/workspace/app
+
+  db:
+    container_name: db
+    image: postgres:15.3
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_ROOT_PASSWORD=root
+      - TZ=Asia/Tokyo
